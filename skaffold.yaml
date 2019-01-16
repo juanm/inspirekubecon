@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta1
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/juanm/inspirekubecon:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/juanm/inspirekubecon:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: inspirekubecon
+        chartPath: charts/inspirekubecon
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/juanm/inspirekubecon'
+          image.tag: '{{.DIGEST_HEX}}'
